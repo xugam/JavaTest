@@ -10,7 +10,7 @@ public class Enemy extends JPanel {
     Image aster;
     int x=random.nextInt(400);
     int y=0;
-    int size = random.nextInt(100);
+    int size = 50;
     Enemy(){
         try{
             aster = ImageIO.read(new File("./asteroid.png"));
