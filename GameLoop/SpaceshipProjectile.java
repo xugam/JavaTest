@@ -10,19 +10,22 @@ public class SpaceshipProjectile extends JPanel {
     Image sProjectile;
     SpaceshipProjectile(int a,int b, int s){
         super();
+        //System.out.println("obj created");
         x=a+s/2;
         y=b;
-        size=100;
+        size=10;
         try {
             sProjectile = ImageIO.read(new File("./bullet.png"));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         g.drawImage(sProjectile, x, y, size,size, this);
     }
     public void move(){
-        y+=5;
+        y-=2;
         repaint();
     }
 }

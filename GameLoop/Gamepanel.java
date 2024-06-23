@@ -4,48 +4,42 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Gamepanel extends JPanel implements Runnable {
-    Thread thread;  
-    Enemy[] enemy = new Enemy[20];
+    Thread thread;
+    int score=0;
+    ArrayList<Enemy> enemy = new ArrayList<>();
     Spaceship ship;
     Image background;
     int sx,sy;
+    SpaceshipProjectile sproj;
+
     Gamepanel(int sizex, int sizey){
         super();
-
         try {
             background = ImageIO.read(new File("./bg.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for(int i=0;i<enemy.length;i++){
-            enemy[i] = new Enemy(sizex,sizey);
+        for(int i = 0 ;i<20;i++){
+            addenemy(sizex,sizey);
         }
-        //this.setPreferredSize(new Dimension(sizex, sizey));
-        //this.setBackground(Color.BLACK);
+        
+        
         ship =  new Spaceship(sizex,sizey);
         setFocusable(true);
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e){
-                 if(e.getKeyCode()==KeyEvent.VK_W){
-                    ship.update(0,-1);
-                 }
-                 if(e.getKeyCode()==KeyEvent.VK_A){
-                    ship.update(-1,0);
-                 }
-                 if(e.getKeyCode()==KeyEvent.VK_S){
-                    ship.update(0,1);
-                 }
-                 if(e.getKeyCode()==KeyEvent.VK_D){
-                    ship.update(1,0);
-                 }
-                 
+                 ship.eventcalled(e);
             }
             public void keyReleased(KeyEvent e){
                 ship.stop();
             }
         });
+    }
+    public void addenemy(int sizex, int sizey){
+            enemy.add(new Enemy(sizex,sizey));
     }
 
     public void startGame(){
@@ -55,10 +49,13 @@ public class Gamepanel extends JPanel implements Runnable {
     }
     public void update(){
         ship.move();
-        for(int i=0;i<enemy.length;i++){
-            enemy[i].update();
-            checkCollision(ship,enemy[i]);
+        ship.movebullet();
+        for (Enemy enemy : enemy) {
+            enemy.update();
+            checkCollision(ship,enemy);
         }
+            
+    
     }
 
     public void paintComponent(Graphics g){
@@ -66,9 +63,10 @@ public class Gamepanel extends JPanel implements Runnable {
         super.paintComponent(g);
         g.drawImage(background, 0, 0, null);
         ship.paintComponent(g);
-        for(int i=0;i<enemy.length;i++){
-            enemy[i].paintComponent(g);
-            checkCollision(ship,enemy[i]);
+        for (Enemy enemy : enemy){
+            enemy.paintComponent(g);
+            checkCollision(ship,enemy);
+            checkCollisionforprojectile(enemy);
         }
     }
     public void checkCollision(Spaceship s, Enemy e){
@@ -83,9 +81,18 @@ public class Gamepanel extends JPanel implements Runnable {
             gameOver();
           } 
     }
+
+    public void checkCollisionforprojectile(Enemy e){
+        boolean destruction = ship.checkCollisionforprojectile(e);
+        if(destruction==true){
+            enemy.remove(e);
+            score++;
+            addenemy(sx,sy);
+        }
+    }
+
     public void gameOver(){
         System.exit(0);
-        
     }
 
     @Override
@@ -94,14 +101,21 @@ public class Gamepanel extends JPanel implements Runnable {
         double deltaTime = 0;
         long lastPassTime = System.nanoTime();
         long currentTime = 0;
+        double count=0;
         while (thread!=null) {
             currentTime = System.nanoTime();
             deltaTime += (currentTime - lastPassTime)/drawInterval;
             lastPassTime = currentTime;
             if(deltaTime>=1){
+                System.out.println(count);
+                count+=0.013;
                 update();
                 repaint();
                 deltaTime--;
+            }
+            if(count>5){
+                count=0;
+                
             }
         }     
     }
